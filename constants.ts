@@ -1,30 +1,35 @@
 import { IdCardData } from './types';
 
+// A professional SVG Letterhead with Green/Orange theme (NFITU style)
+const DEFAULT_TEMPLATE_IMAGE = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2480' height='3508' viewBox='0 0 2480 3508'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='0' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23f0fdf4'/%3E%3Cstop offset='100%25' stop-color='%23dcfce7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='2480' height='3508' fill='white'/%3E%3Crect width='2480' height='750' fill='url(%23g)'/%3E%3Crect y='750' width='2480' height='20' fill='%23ea580c'/%3E%3Crect y='730' width='2480' height='20' fill='%23166534'/%3E%3Ccircle cx='300' cy='375' r='180' fill='%23166534' opacity='0.1'/%3E%3Ctext x='1240' y='320' font-family='serif' font-weight='bold' font-size='110' text-anchor='middle' fill='%23166534'%3ENATIONAL TRADE UNION CENTER%3C/text%3E%3Ctext x='1240' y='450' font-family='sans-serif' font-weight='400' font-size='60' text-anchor='middle' fill='%23374151'%3EGovernment Recognized Organization | Reg. No. 12345/GOVT%3C/text%3E%3Ctext x='1240' y='550' font-family='sans-serif' font-weight='bold' font-size='50' text-anchor='middle' fill='%23ea580c'%3ESTATE COMMITTEE - TAMIL NADU%3C/text%3E%3Crect y='3358' width='2480' height='150' fill='%23166534'/%3E%3Ctext x='1240' y='3455' font-family='sans-serif' font-size='45' text-anchor='middle' fill='white'%3EHead Office: No. 123, Gandhi Road, Chennai, Tamil Nadu - 600001 | Phone: +91 98765 43210%3C/text%3E%3Cg transform='translate(1240, 1900)' opacity='0.03'%3E%3Ccircle r='600' fill='%23166534'/%3E%3C/g%3E%3C/svg%3E";
+
 export const DEFAULT_CARD_DATA: IdCardData = {
-  firstName: 'திரு. இராமச்சந்திரன்',
+  firstName: 'M. Srinivasan',
   lastName: '',
-  fatherName: 'கிருஷ்ணசாமி',
-  role: 'மாவட்ட செயலாளர்',
-  idNumber: 'TN-2024-001',
-  district: 'மதுரை',
+  fatherName: 'Govindasamy',
+  role: 'State President of Tamil Nadu',
+  idNumber: 'NFITU-TN-001',
+  district: 'Thiruvallur',
   bloodGroup: 'O+',
   issueDate: new Date().toISOString().split('T')[0],
   expiryDate: '2025-12-31',
-  phone: '98765 43210',
-  email: '',
-  address: 'எண் 12, வடக்கு தெரு, அவனியாபுரம்',
-  postOffice: 'அவனியாபுரம் அஞ்சல்',
-  pincode: '625012',
-  aadhar: '1234 5678 9012',
+  phone: '93815 66777',
+  email: 'nfitunp@gmail.com',
+  address: 'No 1053, 6th Street, Yamuna Nagar, Nazarathpettai',
+  postOffice: 'Nazarathpettai Post',
+  pincode: '600123',
+  aadhar: 'XXXX XXXX XXXX',
   profileImage: null, 
+  templateImage: DEFAULT_TEMPLATE_IMAGE,
+  printTemplate: true, 
   orgLogo: null, 
-  themeColor: '#006400', // Dark Green
-  accentColor: '#fbbf24', // Amber
-  orgName: 'தமிழ்நாடு தியாகத் தலைவி சின்னம்மா பேரவை',
-  tagline: 'மாநில தலைமை நிலையம்',
-  refNumber: 'தலைமை/01/2024',
-  specialHeader: 'தலைமை நிலைய அறிவிப்பு',
-  letterContent: '', // Using template structure instead of free text
+  themeColor: '#166534', // NFITU Green
+  accentColor: '#ea580c', // NFITU Orange
+  orgName: 'National Front of Indian Trade Unions (DHN)',
+  tagline: 'Global Coalition for Social Justice',
+  refNumber: 'NFITU/TN/2024/01',
+  specialHeader: 'APPOINTMENT ORDER',
+  letterContent: '', 
 };
 
 export const SAMPLE_PROFILE_IMAGES = [

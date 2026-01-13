@@ -15,6 +15,8 @@ export interface IdCardData {
   pincode: string;   // {{பின் கோடு}}
   aadhar: string;    // {{ஆதார் எண்}}
   profileImage: string | null; // {{PHOTO}}
+  templateImage: string | null; // Full page background (Header+Footer+Watermark)
+  printTemplate: boolean; // Controls if the background image prints
   orgLogo: string | null;
   themeColor: string;
   accentColor: string;
