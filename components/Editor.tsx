@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { IdCardData } from '../types';
 import { generateRandomProfile } from '../services/geminiService';
-import { Wand2, Upload, Trash2, Printer, FileText, Image as ImageIcon, ScanLine, AlertCircle, CheckSquare, Square, Stamp } from 'lucide-react';
+import { Wand2, Upload, Trash2, Printer, FileText, Image as ImageIcon, ScanLine, AlertCircle, CheckSquare, Square, Stamp, Download } from 'lucide-react';
 
 interface EditorProps {
   data: IdCardData;
@@ -11,6 +11,7 @@ interface EditorProps {
 
 const Editor: React.FC<EditorProps> = ({ data, onChange, onPrint }) => {
   const [loadingAi, setLoadingAi] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const handleChange = (field: keyof IdCardData, value: any) => {
     onChange({ ...data, [field]: value });
@@ -46,6 +47,47 @@ const Editor: React.FC<EditorProps> = ({ data, onChange, onPrint }) => {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    const element = document.getElementById('print-area');
+    if (!element) return;
+    
+    setDownloading(true);
+    
+    // @ts-ignore
+    if (typeof window.html2pdf === 'undefined') {
+        alert('PDF generator library not loaded. Please wait or refresh.');
+        setDownloading(false);
+        return;
+    }
+
+    // Optimized options for single-page A4 export
+    const opt = {
+        margin:       [0, 0, 0, 0], // Force zero margins
+        filename:     `Appointment_${(data.firstName || 'Order').replace(/[^a-z0-9]/gi, '_')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { 
+            scale: 2, // Higher scale for clear text
+            useCORS: true, 
+            scrollY: 0,
+            scrollX: 0,
+            windowWidth: 794, // Exact A4 width in px at 96 DPI
+            windowHeight: 1123, // Exact A4 height in px at 96 DPI
+            letterRendering: true,
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+        // @ts-ignore
+        await window.html2pdf().set(opt).from(element).save();
+    } catch (err) {
+        console.error("PDF Export failed:", err);
+        alert("Failed to export PDF.");
+    } finally {
+        setDownloading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full bg-white border-r border-gray-200 overflow-y-auto scrollbar-hide">
       
@@ -54,25 +96,40 @@ const Editor: React.FC<EditorProps> = ({ data, onChange, onPrint }) => {
         <h2 className="text-xl font-bold text-gray-800 mb-1">Appointment Editor</h2>
         <p className="text-sm text-gray-500 mb-4 truncate" title={data.orgName}>{data.orgName}</p>
         
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-2 gap-3">
+                <button 
+                    onClick={handleAiGenerate}
+                    disabled={loadingAi}
+                    className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                    {loadingAi ? (
+                        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                    ) : (
+                        <Wand2 size={16} />
+                    )}
+                    Auto-Fill
+                </button>
+                <button 
+                    onClick={onPrint}
+                    className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white py-2.5 px-4 rounded-lg text-sm font-medium transition-colors"
+                >
+                    <Printer size={16} />
+                    Print
+                </button>
+            </div>
+            
             <button 
-                onClick={handleAiGenerate}
-                disabled={loadingAi}
-                className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                onClick={handleDownloadPdf}
+                disabled={downloading}
+                className="flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors w-full"
             >
-                {loadingAi ? (
-                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                {downloading ? (
+                     <span className="animate-spin h-4 w-4 border-2 border-gray-500 border-t-transparent rounded-full"></span>
                 ) : (
-                    <Wand2 size={16} />
+                    <Download size={16} />
                 )}
-                Auto-Fill
-            </button>
-            <button 
-                onClick={onPrint}
-                className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white py-2.5 px-4 rounded-lg text-sm font-medium transition-colors"
-            >
-                <Printer size={16} />
-                Print
+                Export as PDF
             </button>
         </div>
       </div>

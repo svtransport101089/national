@@ -10,7 +10,7 @@ const PrintSheet: React.FC<PrintSheetProps> = ({ data }) => {
   return (
     <div 
       id="print-area"
-      className="bg-white mx-auto shadow-2xl relative flex flex-col print:shadow-none print:w-full print:h-full print:absolute print:top-0 print:left-0"
+      className="bg-white relative flex flex-col print:shadow-none print:w-full print:h-full print:absolute print:top-0 print:left-0"
       style={{
         width: '210mm',
         height: '297mm',
@@ -33,7 +33,7 @@ const PrintSheet: React.FC<PrintSheetProps> = ({ data }) => {
             className="absolute inset-0 z-10 flex flex-col px-12"
             style={{
                 // Adjusted for the large NFITU header
-                paddingTop: '280px', 
+                paddingTop: '260px', 
                 // Adjusted for the footer address bar
                 paddingBottom: '100px',
             }}
@@ -77,15 +77,15 @@ const PrintSheet: React.FC<PrintSheetProps> = ({ data }) => {
                 <div className="mt-auto flex justify-between items-start relative z-10">
                     
                     {/* Recipient Block (Left) */}
-                    <div className="flex-1 max-w-[55%] pr-4">
+                    <div className="flex-1 max-w-[55%] pr-8">
                         <h3 className="font-bold text-lg mb-2 underline decoration-2 underline-offset-4">பெறுநர்</h3>
-                        <div className="text-md font-semibold space-y-1.5 leading-snug">
+                        <div className="text-md font-semibold space-y-2 leading-snug">
                             <p>{data.firstName} {data.lastName}</p>
                             <p>த/பெ {data.fatherName}</p>
                             <p>{data.address}</p>
                             {data.postOffice && <p>{data.postOffice}</p>}
                             <p>{data.district} - {data.pincode}</p>
-                            <div className="mt-3 pt-2 border-t border-gray-400 inline-block pr-4">
+                            <div className="mt-4 pt-2 border-t border-gray-400 inline-block pr-4">
                                 <p>ஆதார் எண்: {data.aadhar}</p>
                                 <p>செல்: {data.phone}</p>
                             </div>
@@ -93,7 +93,7 @@ const PrintSheet: React.FC<PrintSheetProps> = ({ data }) => {
                     </div>
 
                     {/* Right Side: Photo & Signature Placeholder */}
-                    <div className="flex flex-col items-center gap-4">
+                    <div className="flex flex-col items-center gap-6">
                         {/* Photo */}
                         <div className="p-1 bg-white border border-gray-300 shadow-sm -rotate-1">
                             <div className="w-32 h-40 bg-gray-100 overflow-hidden relative">
@@ -113,7 +113,7 @@ const PrintSheet: React.FC<PrintSheetProps> = ({ data }) => {
                              {data.signatureImage ? (
                                  <img 
                                     src={data.signatureImage} 
-                                    className="h-28 object-contain" 
+                                    className="w-96 h-auto object-contain" 
                                     alt="Authorized Seal" 
                                  />
                              ) : (
