@@ -29,7 +29,7 @@ export const DEFAULT_CARD_DATA: IdCardData = {
   orgLogo: null, 
   themeColor: '#166534', // NFITU Green
   accentColor: '#ea580c', // NFITU Orange
-  orgName: 'National Front of Indian Trade Unions (DHN)',
+  orgName: 'நேஷ்னல் பிரண்ட் ஆப் இந்தியன் டிரேட் யூனியன்ஸ் ',
   tagline: 'Global Coalition for Social Justice',
   refNumber: 'NFITU/TN/2026/01',
   specialHeader: 'APPOINTMENT ORDER',
