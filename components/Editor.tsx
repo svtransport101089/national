@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IdCardData } from '../types';
 import { generateRandomProfile } from '../services/geminiService';
-import { Wand2, Upload, Trash2, Printer, FileText, Image as ImageIcon, ScanLine, AlertCircle, CheckSquare, Square, Stamp, Download } from 'lucide-react';
+import { saveRecord, updateRecord, getRecords, deleteRecord, SavedRecord } from '../services/storageService';
+import SavedRecordsList from './SavedRecordsList';
+import { Wand2, Upload, Trash2, Printer, FileText, Image as ImageIcon, ScanLine, AlertCircle, CheckSquare, Square, Stamp, Download, Save, FilePlus, Database } from 'lucide-react';
 
 interface EditorProps {
   data: IdCardData;
@@ -12,6 +14,18 @@ interface EditorProps {
 const Editor: React.FC<EditorProps> = ({ data, onChange, onPrint }) => {
   const [loadingAi, setLoadingAi] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedRecords, setSavedRecords] = useState<SavedRecord[]>([]);
+  const [currentId, setCurrentId] = useState<string | null>(null);
+  const [showSavedList, setShowSavedList] = useState(false);
+
+  useEffect(() => {
+    refreshRecords();
+  }, []);
+
+  const refreshRecords = () => {
+    setSavedRecords(getRecords());
+  };
 
   const handleChange = (field: keyof IdCardData, value: any) => {
     onChange({ ...data, [field]: value });
@@ -47,6 +61,54 @@ const Editor: React.FC<EditorProps> = ({ data, onChange, onPrint }) => {
     }
   };
 
+  const handleSave = async () => {
+      setSaving(true);
+      try {
+          // If we have a currentId, update. Otherwise create new.
+          if (currentId) {
+            updateRecord(currentId, data);
+            alert("Record updated successfully!");
+          } else {
+            const newId = saveRecord(data);
+            setCurrentId(newId);
+            alert("New record saved successfully!");
+          }
+          refreshRecords();
+      } catch (error) {
+          console.error(error);
+          alert("Failed to save record.");
+      } finally {
+          setSaving(false);
+      }
+  };
+
+  const handleNewRecord = () => {
+    if (confirm("Clear current form and start new?")) {
+        setCurrentId(null);
+        // We trigger a reset by calling onChange with blank/default data if needed, 
+        // but for now we assume the user might want to keep template settings.
+        // Let's just clear specific fields or just reset ID so next save is a new entry.
+        // A full reset would require DEFAULT_CARD_DATA, but we don't have it imported here easily without adding imports.
+        // Let's just reset the ID, which is the "Create New" behavior for the *next* save.
+        alert("Ready to create a new record. Edit the fields and click Save.");
+    }
+  };
+
+  const handleLoadRecord = (record: SavedRecord) => {
+    onChange(record);
+    setCurrentId(record.id);
+  };
+
+  const handleDeleteRecord = (id: string) => {
+    if (confirm("Are you sure you want to delete this record?")) {
+        deleteRecord(id);
+        refreshRecords();
+        if (currentId === id) {
+            setCurrentId(null);
+        }
+    }
+  };
+
   const handleDownloadPdf = async () => {
     const element = document.getElementById('print-area');
     if (!element) return;
@@ -60,21 +122,44 @@ const Editor: React.FC<EditorProps> = ({ data, onChange, onPrint }) => {
         return;
     }
 
+    // Clone the element to render it at 100% scale without UI zoom interference
+    const clone = element.cloneNode(true) as HTMLElement;
+    
+    // Remove shadow for clean print
+    clone.classList.remove('shadow-2xl');
+    clone.classList.add('shadow-none');
+    
+    // Setup off-screen container
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.top = '-10000px';
+    container.style.left = '-10000px';
+    container.style.width = '210mm'; // Force A4 width
+    container.appendChild(clone);
+    document.body.appendChild(container);
+
     const opt = {
-        margin: 0,
-        filename: `Appointment_${data.firstName || 'Order'}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        margin:       0,
+        filename:     `Appointment_${(data.firstName || 'Order').replace(/[^a-z0-9]/gi, '_')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { 
+            scale: 2, 
+            useCORS: true, 
+            scrollY: 0,
+            scrollX: 0,
+            letterRendering: true,
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     try {
         // @ts-ignore
-        await window.html2pdf().set(opt).from(element).save();
+        await window.html2pdf().set(opt).from(clone).save();
     } catch (err) {
         console.error("PDF Export failed:", err);
         alert("Failed to export PDF.");
     } finally {
+        document.body.removeChild(container);
         setDownloading(false);
     }
   };
@@ -83,9 +168,15 @@ const Editor: React.FC<EditorProps> = ({ data, onChange, onPrint }) => {
     <div className="flex flex-col h-full bg-white border-r border-gray-200 overflow-y-auto scrollbar-hide">
       
       {/* Header Actions */}
-      <div className="p-6 border-b border-gray-100 bg-gray-50 sticky top-0 z-20">
-        <h2 className="text-xl font-bold text-gray-800 mb-1">Appointment Editor</h2>
-        <p className="text-sm text-gray-500 mb-4 truncate" title={data.orgName}>{data.orgName}</p>
+      <div className="p-6 border-b border-gray-100 bg-gray-50 sticky top-0 z-20 shadow-sm">
+        <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xl font-bold text-gray-800">Editor</h2>
+            {currentId && (
+                <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                    Editing Mode
+                </span>
+            )}
+        </div>
         
         <div className="flex flex-col gap-2">
             <div className="grid grid-cols-2 gap-3">
@@ -110,25 +201,74 @@ const Editor: React.FC<EditorProps> = ({ data, onChange, onPrint }) => {
                 </button>
             </div>
             
-            <button 
-                onClick={handleDownloadPdf}
-                disabled={downloading}
-                className="flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors w-full"
-            >
-                {downloading ? (
-                     <span className="animate-spin h-4 w-4 border-2 border-gray-500 border-t-transparent rounded-full"></span>
-                ) : (
-                    <Download size={16} />
-                )}
-                Export as PDF
-            </button>
+            <div className="grid grid-cols-2 gap-3">
+                <button 
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2.5 px-4 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                    {saving ? (
+                        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                    ) : (
+                        <Save size={16} />
+                    )}
+                    {currentId ? 'Update' : 'Save'}
+                </button>
+                <button 
+                    onClick={handleDownloadPdf}
+                    disabled={downloading}
+                    className="flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors"
+                >
+                    {downloading ? (
+                        <span className="animate-spin h-4 w-4 border-2 border-gray-500 border-t-transparent rounded-full"></span>
+                    ) : (
+                        <Download size={16} />
+                    )}
+                    PDF
+                </button>
+            </div>
         </div>
       </div>
 
       <div className="p-6 space-y-6">
+
+        {/* Saved Records Section (CRUD) */}
+        <section className="space-y-3">
+            <div 
+                className="flex items-center justify-between cursor-pointer group"
+                onClick={() => setShowSavedList(!showSavedList)}
+            >
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                    <Database size={12} /> Saved Records ({savedRecords.length})
+                </h3>
+                <span className="text-xs text-indigo-600 font-medium group-hover:underline">
+                    {showSavedList ? 'Hide' : 'Show'}
+                </span>
+            </div>
+            
+            {showSavedList && (
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="flex items-center justify-between mb-3">
+                         <span className="text-xs text-gray-500">Manage your saved cards</span>
+                         <button 
+                            onClick={handleNewRecord}
+                            className="flex items-center gap-1 text-xs bg-white border border-gray-300 px-2 py-1 rounded hover:bg-gray-100 text-gray-700 transition-colors"
+                         >
+                            <FilePlus size={12} /> New
+                         </button>
+                    </div>
+                    <SavedRecordsList 
+                        records={savedRecords} 
+                        onLoad={handleLoadRecord} 
+                        onDelete={handleDeleteRecord}
+                        currentId={currentId}
+                    />
+                </div>
+            )}
+        </section>
         
         {/* Template Section */}
-        <section className="space-y-4">
+        <section className="space-y-4 pt-4 border-t border-gray-100">
              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
                 <ImageIcon size={12} /> Letterhead Template
              </h3>

@@ -15,7 +15,7 @@ export const DEFAULT_CARD_DATA: IdCardData = {
   district: 'Thiruvallur',
   bloodGroup: 'O+',
   issueDate: new Date().toISOString().split('T')[0],
-  expiryDate: '2025-12-31',
+  expiryDate: '2026-12-31',
   phone: '93815 66777',
   email: 'nfitunp@gmail.com',
   address: 'No 1053, 6th Street, Yamuna Nagar, Nazarathpettai, Poonamallee',
@@ -31,7 +31,7 @@ export const DEFAULT_CARD_DATA: IdCardData = {
   accentColor: '#ea580c', // NFITU Orange
   orgName: 'National Front of Indian Trade Unions (DHN)',
   tagline: 'Global Coalition for Social Justice',
-  refNumber: 'NFITU/TN/2024/01',
+  refNumber: 'NFITU/TN/2026/01',
   specialHeader: 'APPOINTMENT ORDER',
   letterContent: '', 
 };
